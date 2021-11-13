@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+	<div class="container">
 		<div class="d-flex flex-row justify-content-center">
 			<div class="col-md-8 mt-5">
 				<div class="card">
@@ -25,28 +25,34 @@
 export default {
 	data(){
 		return {
-			todo: '',
-			todos: ["Workout", "Drink a Coke", "Protein Shake", "Learning"]
+			todo: ''
+		}
+	},
+
+	computed:{
+		todos(){
+			return this.$store.state.todos
 		}
 	},
 
 	mounted(){
-		alert(this.$store.state.todos)
+		
 	},
 
 	methods:{
 		// Todo 追加の処理
 		sub(){
 			if(this.todo){
-				// todos 配列に 新規 todo を追加
-				this.todos.push(this.todo);
-				this.todo = ''
+				// this.todos.push(this.todo);
+				this.$store.commit('addTodo', this.todo);
+				this.todo = '';
 			}
 		},
 
-		// TOdo 削除の処理
+		// Todo 削除の処理
 		removeTodo(index) {
-			this.$delete(this.todos, index);
+			// this.$delete(this.todos, index);
+			this.$store.commit('removeTodo', index);
 		}
 	}
 }
