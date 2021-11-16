@@ -1,4 +1,3 @@
 export default () => ({
-	
-	todos: ["whatever123"]
+	todos: []
 })

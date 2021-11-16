@@ -1,52 +1,84 @@
 <template>
   <div class="container">
+
 		<div class="d-flex flex-row justify-content-center">
 			<div class="col-md-8 mt-5">
+
 				<div class="card">
 					<div class="card-body">
-						<ul class="list-group">
-							<li class="list-group-item" v-for="(todo, index) in todos" :key="todo"><a href="#" @click="removeTodo(index)">{{todo}}</a></li>
-						</ul>
 
+						<ul class="list-group">
+							<li class="list-group-item" v-for="(todo, index) in todos" :key="index"><a href="#" @click="removeTodo(todo, index)">{{todo.todo}}</a></li>
+						</ul>
 						<form @submit.prevent="sub">
 							<div class="form-group mt-5">
 								<input type="text" placeholder="Add a Todo" class="form-control" v-model="todo">
 								<button type="submit" class="btn btn-outline-primary mt-3">Add Todo</button>
 							</div>
 						</form>
+						
 					</div>
 				</div>
+
 			</div>
 		</div>
+
 	</div>
 </template>
 
 <script>
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+
 export default {
 	data(){
-		return {
-			todo: '',
-			todos: ["Workout", "Drink a Coke", "Protein Shake", "Learning"]
-		}
+    return{
+      todo: ''
+    }
+  },
+	computed: {
+		todos(){
+			return this.$store.state.todos
+		} 
 	},
 
 	mounted(){
-		alert(this.$store.state.todos)
+		firebase.firestore().collection('todos').get().then((res) => {
+			res.forEach(x => {
+				this.$store.commit('setTodo', x.data())
+			})
+		})
 	},
 
 	methods:{
 		// Todo 追加の処理
 		sub(){
 			if(this.todo){
-				// todos 配列に 新規 todo を追加
-				this.todos.push(this.todo);
-				this.todo = ''
+				
+				firebase.firestore().collection('todos').add({
+
+				}).then((res) => {
+					firebase.firestore().collection('todos').doc(res.id).set({
+						todo: this.todo,
+						id: res.id
+					}).then(() => {
+						this.$store.commit('addTodo', ({ todo: this.todo, id: res.id }))
+            this.todo = ""
+					})
+				})
+				// this.$store.commit('addTodo', ({ todo: this.todo, id: res.id }))
+        // this.todo = ""
 			}
 		},
 
-		// TOdo 削除の処理
-		removeTodo(index) {
-			this.$delete(this.todos, index);
+		// Todo 削除の処理
+		removeTodo(todo, index) {
+			firebase.firestore().collection('todos').doc(todo.id).delete().then(() => {
+				console.log(index)
+				console.log('Successfully deleted document')
+				this.$store.commit('removeTodo', index)
+			})
+			// this.$store.commit('removeTodo', index)
 		}
 	}
 }
